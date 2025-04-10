@@ -1,0 +1,1217 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Emotional Support Chatbot</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Modern gradient backgrounds */
+        .chat-container {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+            transition: all 0.5s ease;
+        }
+        
+        /* Enhanced message bubbles with animations */
+        .chat-message {
+            border-radius: 18px;
+            padding: 10px 15px;
+            margin: 8px 0;
+            max-width: 80%;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        }
+        
+        .bot-message {
+            background: linear-gradient(120deg, #e0f7fa, #bbdefb);
+            border-bottom-left-radius: 5px;
+            align-self: flex-start;
+            animation: fadeInLeft 0.5s;
+        }
+        
+        .user-message {
+            background: linear-gradient(120deg, #bbdefb, #90caf9);
+            border-bottom-right-radius: 5px;
+            align-self: flex-end;
+            animation: fadeInRight 0.5s;
+        }
+        
+        /* Animated typing indicator */
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(224, 247, 250, 0.7);
+            padding: 12px 16px;
+            border-radius: 20px;
+            margin: 8px 0;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: linear-gradient(to bottom, #64b5f6, #1e88e5);
+            border-radius: 50%;
+            margin: 0 3px;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        /* Chatbot avatar with pulsing effect */
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #64b5f6, #1e88e5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 5px 15px rgba(30, 136, 229, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .avatar.thinking {
+            animation: pulse 1.5s infinite;
+        }
+        
+        /* Emotional avatar states */
+        .avatar-happy { background: linear-gradient(135deg, #43cea2, #185a9d); }
+        .avatar-sad { background: linear-gradient(135deg, #8e9eab, #eef2f3); }
+        .avatar-stressed { background: linear-gradient(135deg, #ff9966, #ff5e62); }
+        .avatar-anxious { background: linear-gradient(135deg, #c79081, #dfa579); }
+        .avatar-angry { background: linear-gradient(135deg, #ff512f, #dd2476); }
+        .avatar-motivated { background: linear-gradient(135deg, #43cea2, #185a9d); }
+        
+        /* Enhanced resource cards */
+        .resource-card {
+            border-left: 4px solid #42a5f5;
+            background: linear-gradient(to right, #f5f7fa, #e4efe9);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 12px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transform: translateX(0);
+            transition: all 0.3s ease;
+        }
+        
+        .resource-card:hover {
+            transform: translateX(5px);
+        }
+        
+        /* Better buttons */
+        .option-btn {
+            transition: all 0.3s ease;
+            background: linear-gradient(120deg, #e0f7fa, #bbdefb);
+            box-shadow: 0 3px 8px rgba(66, 165, 245, 0.2);
+            border: none;
+            transform: translateY(0);
+        }
+        
+        .option-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(66, 165, 245, 0.3);
+            background: linear-gradient(120deg, #bbdefb, #90caf9);
+        }
+        
+        /* Emoji mood selector enhancements */
+        .emoji-picker {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .emoji-btn {
+            font-size: 1.8rem;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .emoji-btn:hover {
+            transform: scale(1.15) translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        /* Floating particles background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            animation: float 20s infinite linear;
+        }
+        
+        /* Welcome animation */
+        .welcome-animation {
+            text-align: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            z-index: 1000;
+            transition: opacity 1s ease;
+        }
+        
+        .welcome-logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: zoomInDown 1s;
+        }
+        
+        .welcome-text {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin-bottom: 1rem;
+            animation: fadeIn 2s;
+        }
+        
+        .welcome-subtext {
+            font-size: 1.2rem;
+            color: #1e3a8a;
+            margin-bottom: 2rem;
+            animation: fadeIn 2.5s;
+        }
+        
+        .welcome-button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(37, 117, 252, 0.4);
+            transition: all 0.3s ease;
+            animation: fadeIn 3s;
+        }
+        
+        .welcome-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(37, 117, 252, 0.6);
+        }
+        
+        /* Wave animation */
+        .wave-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            background: url('https://cdn.jsdelivr.net/gh/mburakerman/prognroll/waves.svg') repeat-x;
+            background-size: 50% 100%;
+            animation: wave 15s linear infinite;
+            opacity: 0.2;
+        }
+        
+        .wave:nth-child(2) {
+            animation-duration: 10s;
+            animation-delay: -5s;
+            bottom: 10px;
+            opacity: 0.1;
+        }
+        
+        /* Animations */
+        @keyframes fadeInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 5px 15px rgba(30, 136, 229, 0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 5px 20px rgba(30, 136, 229, 0.5); }
+            100% { transform: scale(1); box-shadow: 0 5px 15px rgba(30, 136, 229, 0.3); }
+        }
+        
+        @keyframes typingAnimation {
+            0%, 100% { transform: translateY(0); opacity: 0.5; }
+            50% { transform: translateY(-8px); opacity: 1; }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; }
+        }
+        
+        @keyframes wave {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        /* Scrollbar styling */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track {
+            background: rgba(241, 241, 241, 0.5);
+            border-radius: 10px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(187, 222, 251, 0.7);
+            border-radius: 10px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: rgba(144, 202, 249, 0.9);
+        }
+    </style>
+</head>
+<body class="p-4">
+    <!-- Welcome Animation Screen -->
+    <div id="welcome-screen" class="welcome-animation">
+        <div class="welcome-logo">
+            <i class="fas fa-comments text-indigo-600"></i>
+        </div>
+        <div class="welcome-text">Welcome to StudyCare</div>
+        <div class="welcome-subtext">Your emotional support companion for academic success</div>
+        <button id="start-button" class="welcome-button">Start Chatting</button>
+    </div>
+    
+    <!-- Floating Particles Background -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- Wave Animation -->
+    <div class="wave-container">
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    
+    <!-- Main Chat Container -->
+    <div id="main-container" class="chat-container p-6 my-8" style="display: none;">
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center mb-4">
+                <div id="bot-avatar" class="avatar mr-3">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">StudyCare</h1>
+            </div>
+            <p class="text-gray-600">Your emotional support companion for academic success</p>
+        </div>
+
+        <div id="chat-messages" class="chat-messages flex flex-col space-y-3 mb-6 overflow-y-auto px-2" style="max-height: 500px; min-height: 300px;">
+            <!-- Chat messages will appear here -->
+        </div>
+
+        <div id="emoji-mood-selector" class="mb-6 hidden">
+            <p class="text-gray-700 mb-3 text-center font-medium">How are you feeling today?</p>
+            <div class="emoji-picker">
+                <button class="emoji-btn" onclick="selectMood('happy')">😊</button>
+                <button class="emoji-btn" onclick="selectMood('sad')">😢</button>
+                <button class="emoji-btn" onclick="selectMood('stressed')">😰</button>
+                <button class="emoji-btn" onclick="selectMood('tired')">😴</button>
+                <button class="emoji-btn" onclick="selectMood('angry')">😠</button>
+                <button class="emoji-btn" onclick="selectMood('anxious')">😟</button>
+                <button class="emoji-btn" onclick="selectMood('proud')">😌</button>
+                <button class="emoji-btn" onclick="selectMood('confused')">🤔</button>
+                <button class="emoji-btn" onclick="selectMood('overwhelmed')">🥴</button>
+                <button class="emoji-btn" onclick="selectMood('motivated')">💪</button>
+            </div>
+        </div>
+
+        <div id="quick-options" class="flex flex-wrap gap-2 mb-6 hidden">
+            <!-- Quick response options will appear here -->
+        </div>
+
+        <div class="flex items-center">
+            <input type="text" id="user-input" class="flex-grow p-4 border border-blue-200 rounded-l-2xl focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white bg-opacity-80" placeholder="Type your message here...">
+            <button id="send-btn" class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-r-2xl hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all duration-300" onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+
+        <div class="mt-8 p-5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50">
+            <h3 class="text-lg font-semibold text-blue-700 mb-3">About StudyCare Chatbot</h3>
+            <p class="text-gray-600">
+                StudyCare is designed to provide emotional support during your academic journey. You can share your concerns, 
+                feelings, or ask for advice on managing stress, staying motivated, or balancing your studies.
+            </p>
+            <p class="text-gray-600 mt-3">
+                While StudyCare offers support and suggestions, remember that for serious emotional or mental health concerns, 
+                it's important to reach out to a qualified professional or counselor.
+            </p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 30;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random size between 5px and 20px
+                const size = Math.random() * 15 + 5;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Random position
+                particle.style.left = `${Math.random() * 100}vw`;
+                particle.style.top = `${Math.random() * 100}vh`;
+                
+                // Random animation duration between 15 and 30 seconds
+                const duration = Math.random() * 15 + 15;
+                particle.style.animationDuration = `${duration}s`;
+                
+                // Random animation delay
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+                
+                // Random opacity
+                particle.style.opacity = Math.random() * 0.6 + 0.1;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Welcome animation
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            
+            const startButton = document.getElementById('start-button');
+            const welcomeScreen = document.getElementById('welcome-screen');
+            const mainContainer = document.getElementById('main-container');
+            
+            startButton.addEventListener('click', function() {
+                // Fade out welcome screen
+                welcomeScreen.style.opacity = 0;
+                
+                // After animation completes, hide welcome and show main container
+                setTimeout(() => {
+                    welcomeScreen.style.display = 'none';
+                    mainContainer.style.display = 'block';
+                    
+                    // Animate main container entrance
+                    anime({
+                        targets: mainContainer,
+                        opacity: [0, 1],
+                        translateY: [30, 0],
+                        duration: 800,
+                        easing: 'easeOutCubic'
+                    });
+                    
+                    // Initialize chatbot after welcome screen
+                    initializeChatbot();
+                }, 1000);
+            });
+        });
+        
+        // Initialize chatbot
+        function initializeChatbot() {
+            addBotMessage("Hello! I'm StudyCare, your emotional support companion. How are you feeling today?");
+            showEmojiMoodSelector();
+            
+            // Add event listener for Enter key
+            document.getElementById('user-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            // Focus on input field
+            document.getElementById('user-input').focus();
+        }
+
+        // Show emoji mood selector with animation
+        function showEmojiMoodSelector() {
+            const selector = document.getElementById('emoji-mood-selector');
+            selector.classList.remove('hidden');
+            
+            anime({
+                targets: selector,
+                opacity: [0, 1],
+                translateY: [20, 0],
+                duration: 800,
+                easing: 'easeOutElastic(1, .8)'
+            });
+            
+            // Animate each emoji button
+            const emojiBtns = selector.querySelectorAll('.emoji-btn');
+            anime({
+                targets: emojiBtns,
+                opacity: [0, 1],
+                scale: [0.5, 1],
+                delay: anime.stagger(80),
+                duration: 600,
+                easing: 'easeOutBack'
+            });
+        }
+
+        // Handle mood selection with animation
+        function selectMood(mood) {
+            const selector = document.getElementById('emoji-mood-selector');
+            
+            // Animate selector out
+            anime({
+                targets: selector,
+                opacity: 0,
+                translateY: 20,
+                duration: 300,
+                easing: 'easeInOutQuad',
+                complete: function() {
+                    selector.classList.add('hidden');
+                }
+            });
+            
+            const moodEmojis = {
+                'happy': '😊',
+                'sad': '😢',
+                'stressed': '😰',
+                'tired': '😴',
+                'angry': '😠',
+                'anxious': '😟',
+                'proud': '😌',
+                'confused': '🤔',
+                'overwhelmed': '🥴',
+                'motivated': '💪'
+            };
+            
+            const emoji = moodEmojis[mood] || '';
+            addUserMessage(`I'm feeling ${mood} ${emoji}`);
+            
+            // Update avatar to match mood
+            updateBotAvatar(mood);
+            
+            setTimeout(() => {
+                respondToMood(mood);
+            }, 700);
+        }
+
+        // Update bot avatar based on mood
+        function updateBotAvatar(mood) {
+            const avatar = document.getElementById('bot-avatar');
+            
+            // Remove all mood classes
+            avatar.classList.remove('avatar-happy', 'avatar-sad', 'avatar-stressed', 'avatar-anxious', 'avatar-angry', 'avatar-motivated');
+            
+            // Add current mood class
+            avatar.classList.add(`avatar-${mood}`);
+            
+            // Change icon based on mood
+            let icon = 'fas fa-robot';
+            
+            switch(mood) {
+                case 'happy':
+                case 'proud':
+                case 'motivated':
+                    icon = 'fas fa-smile';
+                    break;
+                case 'sad':
+                    icon = 'fas fa-sad-tear';
+                    break;
+                case 'stressed':
+                case 'overwhelmed':
+                case 'anxious':
+                    icon = 'fas fa-tired';
+                    break;
+                case 'angry':
+                    icon = 'fas fa-angry';
+                    break;
+                case 'confused':
+                    icon = 'fas fa-question';
+                    break;
+                case 'tired':
+                    icon = 'fas fa-bed';
+                    break;
+            }
+            
+            avatar.innerHTML = `<i class="${icon}"></i>`;
+            
+            // Add thinking animation temporarily
+            avatar.classList.add('thinking');
+            
+            // Remove thinking animation after response
+            setTimeout(() => {
+                avatar.classList.remove('thinking');
+            }, 2000);
+        }
+
+        // Respond to the selected mood
+        function respondToMood(mood) {
+            const responses = {
+                'happy': [
+                    "It's wonderful to hear you're feeling happy! What's bringing you joy today?",
+                    "That's great! A positive mindset can really boost your learning. Is there something specific that has you in such a good mood?"
+                ],
+                'sad': [
+                    "I'm sorry to hear you're feeling sad. Would you like to talk about what's bothering you?",
+                    "It's okay to feel down sometimes. Would it help to discuss what's making you feel this way?"
+                ],
+                'stressed': [
+                    "I understand academic stress can be challenging. Would you like some stress management techniques?",
+                    "Feeling stressed is common among students. Let's talk about what's causing your stress and how to manage it."
+                ],
+                'tired': [
+                    "Being tired can make everything more difficult. Are you getting enough rest between study sessions?",
+                    "Fatigue can really impact your studies. Would you like some tips for improving your energy levels?"
+                ],
+                'angry': [
+                    "I understand feeling frustrated or angry. Would it help to talk about what's triggering these feelings?",
+                    "It's okay to feel angry sometimes. Taking a moment to acknowledge your feelings can be the first step to addressing them."
+                ],
+                'anxious': [
+                    "Anxiety is common, especially around exams or deadlines. Would you like to explore some calming techniques?",
+                    "I hear you're feeling anxious. Let's take a moment to breathe and then talk about what's causing your anxiety."
+                ],
+                'proud': [
+                    "That's fantastic! Feeling proud of your accomplishments is important. What achievement are you celebrating?",
+                    "It's great to hear you're feeling proud! Recognizing your progress is an important part of the learning journey."
+                ],
+                'confused': [
+                    "Feeling confused about your coursework or something else? Sometimes talking it through can help bring clarity.",
+                    "It's okay to feel confused. Learning involves navigating uncertainty. What's got you feeling puzzled?"
+                ],
+                'overwhelmed': [
+                    "Feeling overwhelmed is common when balancing multiple responsibilities. Would you like to talk about prioritizing tasks?",
+                    "I understand that feeling overwhelmed can be paralyzing. Let's break down what's happening and find manageable steps forward."
+                ],
+                'motivated': [
+                    "That's excellent! Motivation is a powerful force. What are you feeling motivated about right now?",
+                    "It's great to hear you're feeling motivated! How can I help you channel that energy effectively?"
+                ]
+            };
+            
+            const response = responses[mood] ? responses[mood][Math.floor(Math.random() * responses[mood].length)] : "Thank you for sharing how you're feeling. How can I support you today?";
+            addBotMessage(response);
+            
+            // Show quick options based on mood
+            showQuickOptions(mood);
+        }
+
+        // Display quick response options based on mood with animation
+        function showQuickOptions(mood) {
+            const optionsContainer = document.getElementById('quick-options');
+            optionsContainer.innerHTML = '';
+            optionsContainer.classList.remove('hidden');
+            
+            let options = [];
+            
+            switch(mood) {
+                case 'happy':
+                    options = ["Share my achievement", "Maintain this positivity", "Help others feel better"];
+                    break;
+                case 'sad':
+                    options = ["Talk about what's wrong", "Get mood-lifting tips", "Find motivation"];
+                    break;
+                case 'stressed':
+                    options = ["Stress management techniques", "Help with time management", "Relaxation exercises"];
+                    break;
+                case 'tired':
+                    options = ["Energy boosting tips", "Study-sleep balance", "Productivity when tired"];
+                    break;
+                case 'angry':
+                    options = ["Calm down techniques", "Discuss what's frustrating", "Channel anger productively"];
+                    break;
+                case 'anxious':
+                    options = ["Anxiety reduction techniques", "Prepare for upcoming tests", "Talk through my worries"];
+                    break;
+                case 'proud':
+                    options = ["Celebrate this achievement", "Set new goals", "Maintain momentum"];
+                    break;
+                case 'confused':
+                    options = ["Clarify course material", "Study strategies", "Organize my thoughts"];
+                    break;
+                case 'overwhelmed':
+                    options = ["Prioritization techniques", "Break down my workload", "Self-care during busy times"];
+                    break;
+                case 'motivated':
+                    options = ["Channel this energy", "Create a study plan", "Set achievable goals"];
+                    break;
+                default:
+                    options = ["Academic stress", "Motivation tips", "Time management", "Self-care strategies"];
+            }
+            
+            // Create option buttons
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.classList.add('option-btn', 'py-2', 'px-4', 'rounded-full', 'text-sm', 'font-medium', 'text-blue-800');
+                button.textContent = option;
+                button.onclick = function() {
+                    handleQuickOption(option, mood);
+                };
+                optionsContainer.appendChild(button);
+            });
+            
+            // Animate options appearing
+            anime({
+                targets: optionsContainer,
+                opacity: [0, 1],
+                translateY: [10, 0],
+                duration: 500,
+                easing: 'easeOutQuad'
+            });
+            
+            const optionButtons = optionsContainer.querySelectorAll('.option-btn');
+            anime({
+                targets: optionButtons,
+                opacity: [0, 1],
+                translateY: [10, 0],
+                delay: anime.stagger(100),
+                duration: 500,
+                easing: 'easeOutQuad'
+            });
+        }
+
+        // Handle when user clicks a quick option
+        function handleQuickOption(option, mood) {
+            const optionsContainer = document.getElementById('quick-options');
+            
+            // Animate options disappearing
+            anime({
+                targets: optionsContainer,
+                opacity: 0,
+                translateY: 10,
+                duration: 300,
+                easing: 'easeInQuad',
+                complete: function() {
+                    optionsContainer.classList.add('hidden');
+                }
+            });
+            
+            addUserMessage(option);
+            
+            // Show thinking state
+            updateBotAvatar(mood);
+            
+            setTimeout(() => {
+                const responses = {
+                    "Share my achievement": "That's wonderful! Sharing your achievements helps reinforce positive feelings. What accomplishment are you proud of?",
+                    "Maintain this positivity": "Great choice! To maintain positive feelings, try keeping a gratitude journal, setting small daily goals, and celebrating your wins. What makes you feel most positive?",
+                    "Help others feel better": "That's so thoughtful! Helping others is fulfilling and can boost your own wellbeing. Have you thought about ways you might support your classmates?",
+                    
+                    "Talk about what's wrong": "I'm here to listen. Sometimes just expressing what's troubling you can provide relief. What's been making you feel sad?",
+                    "Get mood-lifting tips": "Here are some research-backed mood boosters:\n• Get 10-15 minutes of sunlight\n• Do light physical activity\n• Listen to uplifting music\n• Connect with a friend\n• Practice gratitude by listing 3 good things\nWould you like to try any of these?",
+                    "Find motivation": "Finding motivation when you're feeling down can be challenging. Sometimes starting with a very small, manageable task can help build momentum. What's one tiny step you could take today?",
+                    
+                    "Stress management techniques": "Let me share some effective stress management techniques:\n• Deep breathing: 4 counts in, hold for 4, out for 6\n• Progressive muscle relaxation\n• 5-minute mindfulness meditation\n• Quick physical activity like jumping jacks\n• Writing out your concerns\nWould you like instructions for any specific technique?",
+                    "Help with time management": "Effective time management can definitely reduce stress! Some strategies include:\n• Using the Pomodoro technique (25 min work, 5 min break)\n• Creating a priority matrix (urgent vs. important)\n• Time blocking your calendar\n• Setting specific goals for each study session\nWhich of these would you like to explore?",
+                    "Relaxation exercises": "Here's a quick relaxation exercise you can do right now:\n1. Close your eyes\n2. Take a deep breath in for 4 counts\n3. Hold for 2 counts\n4. Exhale slowly for 6 counts\n5. Repeat 5 times\nHow do you feel after trying this?",
+                    
+                    "Energy boosting tips": "When you're tired but need to study, try these energy boosters:\n• Drink a glass of water (dehydration causes fatigue)\n• Have a small protein-rich snack\n• Do 2 minutes of jumping jacks or stretching\n• Get some fresh air\n• Take a 20-minute power nap (but set an alarm!)\nWhich one would you like to try?",
+                    "Study-sleep balance": "Sleep is crucial for learning! Research shows that 7-9 hours of quality sleep improves memory consolidation and problem-solving abilities. Are you having trouble balancing sleep with your study schedule?",
+                    "Productivity when tired": "When you're tired but need to be productive, focus on these strategies:\n• Work on simpler tasks that require less cognitive load\n• Use the body doubling technique (study with someone else)\n• Set a timer for just 15 minutes of focused work\n• Change your environment\nWould you like to discuss any of these approaches?",
+                    
+                    "Calm down techniques": "When you're feeling angry, these techniques can help:\n• Take 10 deep breaths\n• Count backwards from 100 by 7s\n• Use the 5-4-3-2-1 grounding technique (notice 5 things you see, 4 things you can touch, etc.)\n• Step away from the situation if possible\nWould you like to try one of these now?",
+                    "Discuss what's frustrating": "I'm here to listen. Expressing your frustrations can help process them. What's made you feel angry or frustrated?",
+                    "Channel anger productively": "Anger has energy that can be redirected productively. Some students find that physical activity, creative expression, or focused problem-solving can transform that energy. What might work for you?",
+                    
+                    "Anxiety reduction techniques": "Here are techniques that can help reduce anxiety:\n• Box breathing (4 counts in, hold 4, out 4, hold 4)\n• The 3-3-3 rule (name 3 things you see, 3 sounds you hear, move 3 body parts)\n• Writing worries down and then challenging them\n• Progressive muscle relaxation\nWould you like to try one now?",
+                    "Prepare for upcoming tests": "Test anxiety is common! Preparation strategies include:\n• Creating a realistic study schedule\n• Using active recall rather than just re-reading\n• Practicing under test-like conditions\n• Preparing your body with good sleep and nutrition\nWhat aspect of test preparation concerns you most?",
+                    "Talk through my worries": "I'm here to listen. Sometimes articulating your worries can make them feel more manageable. What's causing you anxiety right now?",
+                    
+                    "Celebrate this achievement": "Celebrations reinforce positive behaviors and boost motivation! How would you like to celebrate this achievement? Even small recognitions like your favorite treat or activity can be meaningful.",
+                    "Set new goals": "Building on success is a great way to maintain momentum! When setting new goals, try making them SMART (Specific, Measurable, Achievable, Relevant, Time-bound). What area would you like to focus on next?",
+                    "Maintain momentum": "To maintain your momentum, consider:\n• Breaking your next goal into small milestones\n• Creating a visual progress tracker\n• Scheduling regular check-ins with yourself\n• Finding an accountability partner\nWhich of these appeals to you?",
+                    
+                    "Clarify course material": "Being confused about course material is completely normal in the learning process. Is there a specific concept or subject you're finding difficult to understand?",
+                    "Study strategies": "Different subjects often require different study approaches. Some effective strategies include:\n• Creating concept maps to see connections\n• Teaching the material to someone else (or an imaginary student)\n• Using concrete examples to understand abstract concepts\n• Breaking complex topics into smaller parts\nWhat subject are you studying?",
+                    "Organize my thoughts": "Organizing your thoughts can bring clarity. Methods include:\n• Brain dumping everything onto paper\n• Creating structured mind maps\n• Using the Cornell note-taking system\n• Making comparison charts for related concepts\nWould you like to explore any of these approaches?",
+                    
+                    "Prioritization techniques": "When overwhelmed, prioritization becomes essential. Try these techniques:\n• The Eisenhower Matrix (urgent/important grid)\n• MoSCoW method (Must, Should, Could, Won't)\n• ABC prioritization (A=high priority, B=medium, C=low)\n• Single-tasking instead of multitasking\nWhich would you like to learn more about?",
+                    "Break down my workload": "Breaking down your workload makes it more manageable. Let's start by listing everything you need to do, then dividing larger tasks into specific, actionable steps. What's on your plate right now?",
+                    "Self-care during busy times": "Self-care is most important during the busiest times! Quick self-care practices include:\n• 5-minute meditation breaks\n• Setting firm boundaries on your time\n• Scheduling short renewal activities\n• Ensuring you eat and hydrate properly\nWhat self-care practice might work for your schedule?",
+                    
+                    "Channel this energy": "That's fantastic! To channel your motivation effectively, try directing it toward your most challenging or important task first. What's something meaningful you could make progress on right now?",
+                    "Create a study plan": "Great choice! An effective study plan includes:\n• Clear, specific goals for each session\n• Scheduled breaks using techniques like Pomodoro\n• A mix of subjects to maintain interest\n• Review periods to reinforce learning\nWould you like help creating a personalized plan?",
+                    "Set achievable goals": "Setting achievable goals is key to maintaining motivation! The SMART framework (Specific, Measurable, Achievable, Relevant, Time-bound) can help. What's something you'd like to accomplish?"
+                };
+                
+                // Generic responses for default options
+                const genericResponses = {
+                    "Academic stress": "Academic pressure can be challenging. Are you feeling stressed about a particular assignment, exam, or your overall workload?",
+                    "Motivation tips": "Finding motivation can be difficult sometimes. What are you currently working on that you'd like to feel more motivated about?",
+                    "Time management": "Effective time management is crucial for academic success. Are you struggling with procrastination, balancing multiple responsibilities, or setting priorities?",
+                    "Self-care strategies": "Self-care is essential for maintaining wellbeing during your studies. This includes physical, emotional, and mental care. Which aspect of self-care would you like to focus on?"
+                };
+                
+                const response = responses[option] || genericResponses[option] || "I'd be happy to help with that. Could you tell me more about what you're looking for?";
+                addBotMessage(response);
+                
+                // For some responses, show a resource card with additional information
+                if (option === "Stress management techniques" || option === "Energy boosting tips" || option === "Anxiety reduction techniques") {
+                    setTimeout(() => {
+                        addResourceCard(option);
+                    }, 1000);
+                }
+            }, 1200);
+        }
+
+        // Add a resource card with additional information and animation
+        function addResourceCard(topic) {
+            const chatMessages = document.getElementById('chat-messages');
+            const resourceCard = document.createElement('div');
+            resourceCard.classList.add('chat-message', 'bot-message', 'resource-card');
+            
+            let cardContent = "";
+            
+            if (topic === "Stress management techniques") {
+                cardContent = `
+                    <h3 class="font-bold text-blue-700">Resource: Managing Academic Stress</h3>
+                    <p class="text-sm text-gray-600 mt-1">Research from the American Psychological Association shows that these techniques can reduce stress levels by up to 30% when practiced regularly:</p>
+                    <ul class="list-disc pl-5 mt-2 text-gray-700">
+                        <li>Mindfulness meditation - even 5 minutes daily</li>
+                        <li>Regular physical activity (20-30 minutes)</li>
+                        <li>Adequate sleep (7-9 hours for students)</li>
+                        <li>Social connection and support</li>
+                        <li>Breaking large tasks into smaller steps</li>
+                    </ul>
+                `;
+            } else if (topic === "Energy boosting tips") {
+                cardContent = `
+                    <h3 class="font-bold text-blue-700">Resource: Natural Energy Boosters</h3>
+                    <p class="text-sm text-gray-600 mt-1">According to nutrition and cognitive research:</p>
+                    <ul class="list-disc pl-5 mt-2 text-gray-700">
+                        <li>Hydration can improve cognitive performance by 14%</li>
+                        <li>Protein-rich snacks provide sustained energy</li>
+                        <li>B-vitamins support energy metabolism</li>
+                        <li>Natural light exposure helps regulate alertness</li>
+                        <li>Brief movement breaks increase blood flow to the brain</li>
+                    </ul>
+                `;
+            } else if (topic === "Anxiety reduction techniques") {
+                cardContent = `
+                    <h3 class="font-bold text-blue-700">Resource: Evidence-Based Anxiety Management</h3>
+                    <p class="text-sm text-gray-600 mt-1">These techniques are recommended by clinical psychologists:</p>
+                    <ul class="list-disc pl-5 mt-2 text-gray-700">
+                        <li>Diaphragmatic breathing reduces physiological stress response</li>
+                        <li>Grounding exercises reconnect you to the present moment</li>
+                        <li>Cognitive reframing helps challenge anxious thoughts</li>
+                        <li>Regular exercise reduces anxiety sensitivity</li>
+                        <li>Adequate sleep improves emotional regulation</li>
+                    </ul>
+                `;
+            }
+            
+            resourceCard.innerHTML = cardContent;
+            chatMessages.appendChild(resourceCard);
+            
+            // Animate resource card entrance
+            anime({
+                targets: resourceCard,
+                opacity: [0, 1],
+                translateX: [-20, 0],
+                duration: 800,
+                easing: 'easeOutElastic(1, .8)'
+            });
+            
+            scrollToBottom();
+        }
+
+        // Add a bot message to the chat with enhanced animations
+        function addBotMessage(message) {
+            const chatMessages = document.getElementById('chat-messages');
+            
+            // Show bot is thinking
+            const avatar = document.getElementById('bot-avatar');
+            avatar.classList.add('thinking');
+            
+            // Add typing indicator
+            const typingIndicator = document.createElement('div');
+            typingIndicator.classList.add('typing-indicator');
+            typingIndicator.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+            chatMessages.appendChild(typingIndicator);
+            scrollToBottom();
+            
+            // After a short delay, remove typing indicator and add the actual message
+            setTimeout(() => {
+                // Remove thinking animation
+                avatar.classList.remove('thinking');
+                
+                // Remove typing indicator with fade out
+                anime({
+                    targets: typingIndicator,
+                    opacity: 0,
+                    translateY: 10,
+                    duration: 300,
+                    easing: 'easeInQuad',
+                    complete: function() {
+                        chatMessages.removeChild(typingIndicator);
+                        
+                        // Create and add the actual message
+                        const messageElement = document.createElement('div');
+                        messageElement.classList.add('chat-message', 'bot-message', 'px-4', 'py-3');
+                        messageElement.style.opacity = 0;
+                        messageElement.style.transform = 'translateX(-20px)';
+                        
+                        // Check if the message contains bullet points and format accordingly
+                        if (message.includes('\n•')) {
+                            const parts = message.split('\n•');
+                            let formattedMessage = parts[0];
+                            
+                            if (parts.length > 1) {
+                                formattedMessage += '<ul class="list-disc pl-5 mt-2">';
+                                for (let i = 1; i < parts.length; i++) {
+                                    formattedMessage += `<li>${parts[i]}</li>`;
+                                }
+                                formattedMessage += '</ul>';
+                            }
+                            
+                            messageElement.innerHTML = formattedMessage;
+                        } else {
+                            messageElement.textContent = message;
+                        }
+                        
+                        chatMessages.appendChild(messageElement);
+                        
+                        // Animate message entrance
+                        anime({
+                            targets: messageElement,
+                            opacity: [0, 1],
+                            translateX: [-20, 0],
+                            duration: 600,
+                            easing: 'easeOutQuad'
+                        });
+                        
+                        scrollToBottom();
+                    }
+                });
+            }, 1500);
+        }
+
+        // Add a user message to the chat with enhanced animations
+        function addUserMessage(message) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message', 'user-message', 'px-4', 'py-3', 'ml-auto');
+            messageElement.textContent = message;
+            messageElement.style.opacity = 0;
+            messageElement.style.transform = 'translateX(20px)';
+            
+            chatMessages.appendChild(messageElement);
+            
+            // Animate user message
+            anime({
+                targets: messageElement,
+                opacity: [0, 1],
+                translateX: [20, 0],
+                duration: 600,
+                easing: 'easeOutQuad'
+            });
+            
+            scrollToBottom();
+        }
+
+        // Send a message from the user input
+        function sendMessage() {
+            const userInput = document.getElementById('user-input');
+            const message = userInput.value.trim();
+            
+            if (message) {
+                addUserMessage(message);
+                userInput.value = '';
+                
+                // Hide quick options when user sends a custom message
+                const optionsContainer = document.getElementById('quick-options');
+                
+                anime({
+                    targets: optionsContainer,
+                    opacity: 0,
+                    translateY: 10,
+                    duration: 300,
+                    easing: 'easeInQuad',
+                    complete: function() {
+                        optionsContainer.classList.add('hidden');
+                    }
+                });
+                
+                // Process user message and respond
+                setTimeout(() => {
+                    processUserMessage(message);
+                }, 700);
+            }
+        }
+
+        // Process the user's message and generate a response
+        function processUserMessage(message) {
+            message = message.toLowerCase();
+            
+            // Check for emotional keywords
+            if (message.includes('stress') || message.includes('overwhelm') || message.includes('pressure')) {
+                updateBotAvatar('stressed');
+                addBotMessage("I can see you're feeling stressed. Academic pressure can be really challenging. Would you like some stress management techniques, or would you prefer to talk about what's causing your stress?");
+                showQuickOptions('stressed');
+            }
+            else if (message.includes('anxious') || message.includes('worry') || message.includes('nervous') || message.includes('fear')) {
+                updateBotAvatar('anxious');
+                addBotMessage("Anxiety around academics is very common. Would you like to try some calming techniques, or would you prefer to talk through your specific concerns?");
+                showQuickOptions('anxious');
+            }
+            else if (message.includes('sad') || message.includes('depress') || message.includes('unhappy') || message.includes('down')) {
+                updateBotAvatar('sad');
+                addBotMessage("I'm sorry to hear you're feeling down. Would you like to talk about what's contributing to these feelings, or would you prefer some mood-lifting suggestions?");
+                showQuickOptions('sad');
+            }
+            else if (message.includes('tired') || message.includes('exhaust') || message.includes('fatigue') || message.includes('sleep')) {
+                updateBotAvatar('tired');
+                addBotMessage("Feeling tired can make everything more difficult. Are you getting enough rest? Would you like some tips for balancing sleep with your academic responsibilities?");
+                showQuickOptions('tired');
+            }
+            else if (message.includes('motivat') || message.includes('inspire') || message.includes('encourage')) {
+                updateBotAvatar('motivated');
+                addBotMessage("Finding and maintaining motivation is key to academic success. What are you working on that you'd like to feel more motivated about?");
+                showQuickOptions('motivated');
+            }
+            else if (message.includes('exam') || message.includes('test') || message.includes('quiz')) {
+                updateBotAvatar('anxious');
+                addBotMessage("Tests and exams can be stressful. Are you looking for study strategies, ways to manage test anxiety, or something else?");
+                
+                const optionsContainer = document.getElementById('quick-options');
+                optionsContainer.innerHTML = '';
+                optionsContainer.classList.remove('hidden');
+                
+                const options = ["Study strategies", "Test anxiety tips", "Last-minute preparation", "Post-exam coping"];
+                options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.classList.add('option-btn', 'py-2', 'px-4', 'rounded-full', 'text-sm', 'font-medium', 'text-blue-800');
+                    button.textContent = option;
+                    button.onclick = function() {
+                        handleSpecificOption(option);
+                    };
+                    optionsContainer.appendChild(button);
+                });
+                
+                // Animate options
+                anime({
+                    targets: optionsContainer.querySelectorAll('.option-btn'),
+                    opacity: [0, 1],
+                    translateY: [10, 0],
+                    delay: anime.stagger(100),
+                    duration: 500,
+                    easing: 'easeOutQuad'
+                });
+            }
+            else if (message.includes('procrastinate') || message.includes('distract') || message.includes('focus') || message.includes('concentrate')) {
+                updateBotAvatar('confused');
+                addBotMessage("Focus and procrastination challenges are something many students face. Would you like some strategies to improve concentration or overcome procrastination?");
+                
+                const optionsContainer = document.getElementById('quick-options');
+                optionsContainer.innerHTML = '';
+                optionsContainer.classList.remove('hidden');
+                
+                const options = ["Focus techniques", "Overcome procrastination", "Distraction management", "Study environment tips"];
+                options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.classList.add('option-btn', 'py-2', 'px-4', 'rounded-full', 'text-sm', 'font-medium', 'text-blue-800');
+                    button.textContent = option;
+                    button.onclick = function() {
+                        handleSpecificOption(option);
+                    };
+                    optionsContainer.appendChild(button);
+                });
+                
+                // Animate options
+                anime({
+                    targets: optionsContainer.querySelectorAll('.option-btn'),
+                    opacity: [0, 1],
+                    translateY: [10, 0],
+                    delay: anime.stagger(100),
+                    duration: 500,
+                    easing: 'easeOutQuad'
+                });
+            }
+            else if (message.includes('thank')) {
+                updateBotAvatar('happy');
+                addBotMessage("You're very welcome! I'm here to support you whenever you need it. Is there anything else you'd like to talk about?");
+            }
+            else if (message.includes('bye') || message.includes('goodbye')) {
+                updateBotAvatar('happy');
+                addBotMessage("Take care! Remember that managing your emotional wellbeing is just as important as your academic work. Feel free to come back anytime you need support.");
+            }
+            else {
+                // Generic responses for other messages
+                const genericResponses = [
+                    "I hear you. Could you tell me more about how that's affecting you?",
+                    "Thank you for sharing that. How have you been coping with this situation?",
+                    "I understand. How can I best support you with this right now?",
+                    "That's important to address. Would you like some specific strategies or just someone to listen?",
+                    "I appreciate you opening up. What aspect of this situation is most challenging for you?"
+                ];
+                
+                const response = genericResponses[Math.floor(Math.random() * genericResponses.length)];
+                addBotMessage(response);
+            }
+        }
+
+        // Handle specific option selections for focused topics
+        function handleSpecificOption(option) {
+            const optionsContainer = document.getElementById('quick-options');
+            
+            // Animate options disappearing
+            anime({
+                targets: optionsContainer,
+                opacity: 0,
+                translateY: 10,
+                duration: 300,
+                easing: 'easeInQuad',
+                complete: function() {
+                    optionsContainer.classList.add('hidden');
+                }
+            });
+            
+            addUserMessage(option);
+            
+            // Update avatar to thinking state
+            const avatar = document.getElementById('bot-avatar');
+            avatar.classList.add('thinking');
+            
+            setTimeout(() => {
+                const specificResponses = {
+                    "Study strategies": "Effective study strategies depend on your learning style and the subject. Some evidence-based techniques include:\n• Spaced repetition (reviewing material at increasing intervals)\n• Active recall (testing yourself rather than re-reading)\n• Interleaving (mixing up different subjects/problems)\n• Elaboration (relating new information to what you already know)\nWhich would you like to explore further?",
+                    
+                    "Test anxiety tips": "Test anxiety affects many students. Here are some approaches that can help:\n• Preparation: Create a realistic study schedule leading up to the test\n• Practice: Use past papers under timed conditions\n• Mindset: View the test as an opportunity to show what you know\n• Physical: Use deep breathing and progressive muscle relaxation\n• Day-of: Arrive early and use positive self-talk\nWould you like details on any of these?",
+                    
+                    "Last-minute preparation": "For last-minute preparation, focus on these high-impact activities:\n• Review your summary notes and key concepts\n• Look over previously solved problems\n• Use memory triggers like acronyms or visualization\n• Get adequate sleep (cramming all night is counterproductive)\n• Eat a balanced meal and stay hydrated\nRemember that some preparation is better than none!",
+                    
+                    "Post-exam coping": "After an exam, it's normal to have mixed feelings. Here are some healthy ways to cope:\n• Acknowledge your efforts regardless of the outcome\n• Avoid extensive post-exam discussion if it increases anxiety\n• Do something enjoyable to decompress\n• Reflect on what worked/didn't work for future improvement\n• Remember that one exam doesn't define your academic journey\nHow are you feeling about a recent exam?",
+                    
+                    "Focus techniques": "Improving focus takes practice. These techniques can help:\n• Pomodoro Method: 25 minutes of focused work, then 5-minute break\n• Implementation intentions: \"When X happens, I will do Y\"\n• Environmental adjustments: removing phone, using website blockers\n• Body-doubling: working alongside someone else\n• Focus rituals: specific actions that signal 'focus time'\nWhich would you like to try?",
+                    
+                    "Overcome procrastination": "Procrastination often stems from psychological barriers, not laziness. Try these approaches:\n• Break tasks into tiny, non-intimidating steps\n• Use the 5-minute rule: commit to just 5 minutes of work\n• Address emotional blocks: are you afraid of failure or perfectionism?\n• Create accountability through study groups or commitment devices\n• Build rewards into your study schedule\nWhat do you tend to procrastinate on most?",
+                    
+                    "Distraction management": "Managing distractions is essential for productive study. Consider these strategies:\n• Phone management: use apps like Forest or place in another room\n• Digital environment: use browser extensions that block distracting sites\n• Physical environment: create a dedicated study space\n• Internal distractions: keep a 'distraction pad' to note thoughts to address later\n• Schedule 'worry time' outside of study periods\nWhat distracts you most during study sessions?",
+                    
+                    "Study environment tips": "Your study environment significantly impacts your focus and retention. Consider:\n• Light: natural light is ideal, or blue-spectrum lighting\n• Sound: background noise preferences vary - try silence, ambient sounds, or instrumental music\n• Comfort: a chair that's comfortable but not too relaxing\n• Temperature: slightly cool environments (around 68-70°F) are optimal for focus\n• Organization: clear visual clutter from your workspace\nWhat aspect of your study environment would you like to improve?"
+                };
+                
+                const response = specificResponses[option] || "I'd be happy to help with that. Could you tell me more about what you're looking for?";
+                addBotMessage(response);
+                
+                // For some detailed topics, add a resource card
+                if (option === "Study strategies" || option === "Test anxiety tips") {
+                    setTimeout(() => {
+                        addSpecificResourceCard(option);
+                    }, 1000);
+                }
+            }, 1200);
+        }
+
+        // Add specific resource cards for certain topics with animation
+        function addSpecificResourceCard(topic) {
+            const chatMessages = document.getElementById('chat-messages');
+            const resourceCard = document.createElement('div');
+            resourceCard.classList.add('chat-message', 'bot-message', 'resource-card');
+            resourceCard.style.opacity = 0;
+            resourceCard.style.transform = 'translateX(-20px)';
+            
+            let cardContent = "";
+            
+            if (topic === "Study strategies") {
+                cardContent = `
+                    <h3 class="font-bold text-blue-700">Resource: Evidence-Based Study Methods</h3>
+                    <p class="text-sm text-gray-600 mt-1">Research from cognitive science shows these methods improve retention:</p>
+                    <ul class="list-disc pl-5 mt-2 text-gray-700">
+                        <li><b>Retrieval Practice:</b> Testing yourself improves memory by 50% compared to re-reading</li>
+                        <li><b>Spaced Repetition:</b> Reviewing material at increasing intervals (1 day, 3 days, 1 week)</li>
+                        <li><b>Interleaving:</b> Mixing different problem types improves discrimination between concepts</li>
+                        <li><b>Concrete Examples:</b> Applying abstract concepts to specific examples enhances understanding</li>
+                        <li><b>Dual Coding:</b> Combining words and visuals increases recall by 65%</li>
+                    </ul>
+                `;
+            } else if (topic === "Test anxiety tips") {
+                cardContent = `
+                    <h3 class="font-bold text-blue-700">Resource: Managing Test Anxiety</h3>
+                    <p class="text-sm text-gray-600 mt-1">Psychology research supports these approaches:</p>
+                    <ul class="list-disc pl-5 mt-2 text-gray-700">
+                        <li><b>Cognitive Reframing:</b> View anxiety as "arousal" that can enhance performance</li>
+                        <li><b>Expressive Writing:</b> Spending 10 minutes writing about test worries before an exam can improve scores by up to 15%</li>
+                        <li><b>Implementation Intentions:</b> Create if-then plans for managing anxiety moments</li>
+                        <li><b>Visualization:</b> Mental rehearsal of successful test-taking can reduce anxiety</li>
+                        <li><b>Self-Compassion:</b> Replace self-criticism with kind self-talk</li>
+                    </ul>
+                `;
+            }
+            
+            resourceCard.innerHTML = cardContent;
+            chatMessages.appendChild(resourceCard);
+            
+            // Animate resource card entrance
+            anime({
+                targets: resourceCard,
+                opacity: [0, 1],
+                translateX: [-20, 0],
+                duration: 800,
+                easing: 'easeOutElastic(1, .8)'
+            });
+            
+            scrollToBottom();
+        }
+
+        // Scroll to the bottom of the chat container with smooth animation
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chat-messages');
+            anime({
+                targets: chatMessages,
+                scrollTop: chatMessages.scrollHeight,
+                duration: 500,
+                easing: 'easeInOutQuad'
+            });
+        }
+    </script>
+</body>
+</html>
